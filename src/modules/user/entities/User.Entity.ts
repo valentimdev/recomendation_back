@@ -8,9 +8,11 @@ export class User {
   @Column()
   name!: string;
   @Column()
+  password!:string;
+  @Column()
   email!: string;
   @Column()
-  referral_code!: string;
+  referral!: string;
   @CreateDateColumn()
   createdAt!: Date;
   @UpdateDateColumn()
