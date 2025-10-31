@@ -29,7 +29,7 @@ export class UserService implements IUserService {
     const usuarioSalvo = await this.userRepository.save(newUser)
     await this.referralService.ProcessReferralData({
             userIdQueFoiIndicado: usuarioSalvo.id,
-            codigoDeQuemIndicou: data.codigoDeQuemIndicou
+            codigoDeQuemIndicou: data.referral
         });
   }
   async getUserProfile(userId: string): Promise<User> {}
