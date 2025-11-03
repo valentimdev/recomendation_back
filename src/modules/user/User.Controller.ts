@@ -1,12 +1,7 @@
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-
 import { CreateUserRequest } from '../interfaces/services/IUser.Service.js';
-
-
 import { UserRepository } from './User.Repository.js';
 import { ReferralRepository } from '../../referral/Referal.Repository.js';
-
-
 import { UserService } from './User.Service.js';
 import { ReferralService } from '../../referral/Referal.Service.js';
 
@@ -29,15 +24,9 @@ export async function userRoutes(fastify: FastifyInstance) {
     
 
     try {
-      
-
       const data = request.body as CreateUserRequest;
-
-
       const novoUsuario = await userService.register(data);
-
       return reply.status(201).send(novoUsuario);
-
     } catch (error) {
       
 
