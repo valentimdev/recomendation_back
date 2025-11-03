@@ -17,7 +17,7 @@ export class UserRepository implements IUserRepository {
     return this.ormRepository.find();
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     return this.ormRepository.findOneBy({ id: id });
   }
 
@@ -27,6 +27,10 @@ export class UserRepository implements IUserRepository {
 
   async findByEmail(email: string): Promise<User | null> {
     return this.ormRepository.findOne({ where: { email: email } });
+  }
+
+    async findByRefCode(referral: string): Promise<User | null> {
+    return this.ormRepository.findOne({ where: { referral: referral } });
   }
 
   async update(user: User): Promise<User> {

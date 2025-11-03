@@ -31,6 +31,7 @@ export class UserService implements IUserService {
             userIdQueFoiIndicado: usuarioSalvo.id,
             codigoDeQuemIndicou: data.referral
         });
+    return newUser;
   }
   async getUserProfile(userId: string): Promise<User> {}
 }

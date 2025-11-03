@@ -1,6 +1,3 @@
-import { Int32 } from 'typeorm';
-import { Referral } from '../../referral/entities/Referral.Entity.js';
-import { User } from '../../user/entities/User.Entity.js';
 export type ReferralDashboard = {
 
   meuCodigo: string;
@@ -8,11 +5,11 @@ export type ReferralDashboard = {
 }
 
 export type ProcessReferralData = {
-  userIdQueFoiIndicado: string;
-  userIdQueFoiIndicou: string;
+  userIdReferrer: string;
+  userIdReferred: string;
   codigoDeQuemIndicou?: string; 
 }
-export interface IReferralRepository {
+export interface IReferralService {
     processRegistration(data: ProcessReferralData): Promise<void>;
     getReferralNumberForUser(userId: string): Promise<ReferralDashboard>;
 
