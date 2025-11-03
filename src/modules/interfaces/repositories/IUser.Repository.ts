@@ -5,7 +5,6 @@ export interface IUserRepository {
   findAll(): Promise<User[]>;
   findById(id: string): Promise<User | null>;
   findByName(nome: string): Promise<User | null>;
-  findByRefCode(code: string): Promise<User | null>;
   update(user: User): Promise<User>;
   delete(id: string): Promise<void>;
   refCount(): Promise<number>;

@@ -1,4 +1,4 @@
-import { Referral } from '../../referral/entities/Referral.Entity.js';
+import { Referral } from "../../../referral/entities/Referal.Entity.js";
 
 export interface IReferralRepository {
   save(referral: Referral): Promise<Referral>;

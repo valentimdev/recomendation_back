@@ -8,7 +8,6 @@ export type ReferralDashboard = {
 export type ProcessReferralData = {
   userReferrer: User;
   userReferred: User;
-  refCode?: string; 
 }
 export interface IReferralService {
     processRegistration(data: ProcessReferralData): Promise<void>;

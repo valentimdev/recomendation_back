@@ -14,9 +14,10 @@ export class UserService implements IUserService {
     private readonly referralRepository: IReferralRepository,
     private readonly referralService: IReferralService
   ) {}
+
   async register(data: CreateUserRequest): Promise<User> {
     const userExists = await this.userRepository.findByEmail(data.email);
-    
+
     if (userExists) {
       throw new Error('Email ja existe');
     }
@@ -24,16 +25,32 @@ export class UserService implements IUserService {
 
     const newUser = new User();
     newUser.name = data.name;
-    newUser.password = data.password
-    newUser.email = data.email
-    newUser.referral=data.referral
+    newUser.password = senhaHash;
+    newUser.email = data.email;
 
-    const usuarioSalvo = await this.userRepository.save(newUser)
-    await this.referralService.processRegistration({
-            userIdQueFoiIndicado: usuarioSalvo.id,
-            refCode: data.referral
+    const usuarioSalvo = await this.userRepository.save(newUser);
+    if (data.referralCodeUsed) {
+      const userReferrer = await this.userRepository.findById(
+        data.referralCodeUsed
+      );
+      if (userReferrer) {
+        await this.referralService.processRegistration({
+          userReferred: usuarioSalvo,
+          userReferrer: userReferrer,
         });
+      }
+    }
     return newUser;
   }
-  async getUserProfile(userId: string): Promise<User> {}
+  async getUserProfile(userId: string): Promise<User> {
+
+    const userRetorno = await this.userRepository.findById(userId);
+
+    if (!userRetorno) {
+      throw new Error("Usuário não encontrado.");
+    }
+
+    return userRetorno;
+  }
+
 }

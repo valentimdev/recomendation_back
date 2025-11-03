@@ -4,7 +4,7 @@ export type CreateUserRequest = {
   name: string;
   email: string;
   password: string;
-  referral: string;
+  referralCodeUsed?: string;
 }
 export interface IUserService {
   register(data: CreateUserRequest): Promise<User>;

@@ -4,11 +4,10 @@ import { Referral } from './entities/Referal.Entity.js';
 import { AppDataSource } from '../config/data-source.js';
 export class ReferralRepository implements IReferralRepository {
   
-  // A "ferramenta" real do TypeORM
+
   private ormRepository: Repository<Referral>;
 
   constructor() {
-    // Pega o repositório da entidade Referral no construtor
     this.ormRepository = AppDataSource.getRepository(Referral);
   }
 

@@ -11,8 +11,6 @@ export class User {
   password!:string;
   @Column()
   email!: string;
-  @Column()
-  referral!: string;
   @CreateDateColumn()
   createdAt!: Date;
   @UpdateDateColumn()
