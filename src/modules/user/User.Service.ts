@@ -8,6 +8,7 @@ import {
 import { User } from './entities/User.Entity.js';
 import { UserRepository } from './User.Repository.js';
 import bcrypt from 'bcryptjs';
+import { sendEmail } from '../../services/EmailService.js';
 export class UserService implements IUserService {
   constructor(
     private readonly userRepository: IUserRepository,
@@ -27,8 +28,15 @@ export class UserService implements IUserService {
     newUser.name = data.name;
     newUser.password = senhaHash;
     newUser.email = data.email;
-
+    
     const usuarioSalvo = await this.userRepository.save(newUser);
+    sendEmail({
+      to: usuarioSalvo.email,
+      subject: 'Bem-vindo(a) ao Nosso App!',
+      body: `<h1>Olá, ${usuarioSalvo.name}!</h1><p>Seu registro foi concluído com sucesso.</p>`,
+    }).catch((err) =>
+      console.error('Falha ao enviar e-mail de boas-vindas:', err),
+    );
     if (data.referralCodeUsed) {
       const userReferrer = await this.userRepository.findById(
         data.referralCodeUsed
@@ -38,9 +46,16 @@ export class UserService implements IUserService {
           userReferred: usuarioSalvo,
           userReferrer: userReferrer,
         });
+        sendEmail({
+          to: userReferrer.email, 
+          subject: 'Você recebeu um ponto de indicação!',
+          body: `<h1>Parabéns, ${userReferrer.name}!</h1><p>O usuário <b>${usuarioSalvo.name}</b> acabou de se registrar usando seu código de indicação.</p>`,
+        }).catch((err) =>
+          console.error('Falha ao enviar e-mail de notificação de indicação:', err),
+        );
       }
     }
-    return newUser;
+    return usuarioSalvo;
   }
   async getUserProfile(userId: string): Promise<User> {
 
