@@ -1,16 +1,17 @@
+import { User } from "../../user/entities/User.Entity.js";
+
 export type ReferralDashboard = {
 
-  meuCodigo: string;
   totalIndicados: number; 
 }
 
 export type ProcessReferralData = {
-  userIdReferrer: string;
-  userIdReferred: string;
-  codigoDeQuemIndicou?: string; 
+  userReferrer: User;
+  userReferred: User;
+  refCode?: string; 
 }
 export interface IReferralService {
     processRegistration(data: ProcessReferralData): Promise<void>;
-    getReferralNumberForUser(userId: string): Promise<ReferralDashboard>;
+    getReferralNumberForUser(userId: string): Promise<Number>;
 
 }

@@ -1,5 +1,6 @@
 import { IReferralRepository } from '../interfaces/repositories/IReferral.Repository.js';
 import { IUserRepository } from '../interfaces/repositories/IUser.Repository.js';
+import { IReferralService } from '../interfaces/services/IReferral.Service.js';
 import {
   IUserService,
   CreateUserRequest,
@@ -10,7 +11,8 @@ import bcrypt from 'bcryptjs';
 export class UserService implements IUserService {
   constructor(
     private readonly userRepository: IUserRepository,
-    private readonly referralRepository: IReferralRepository
+    private readonly referralRepository: IReferralRepository,
+    private readonly referralService: IReferralService
   ) {}
   async register(data: CreateUserRequest): Promise<User> {
     const userExists = await this.userRepository.findByEmail(data.email);
@@ -27,9 +29,9 @@ export class UserService implements IUserService {
     newUser.referral=data.referral
 
     const usuarioSalvo = await this.userRepository.save(newUser)
-    await this.referralService.ProcessReferralData({
+    await this.referralService.processRegistration({
             userIdQueFoiIndicado: usuarioSalvo.id,
-            codigoDeQuemIndicou: data.referral
+            refCode: data.referral
         });
     return newUser;
   }
