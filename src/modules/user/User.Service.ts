@@ -4,6 +4,7 @@ import { IReferralService } from '../interfaces/services/IReferral.Service.js';
 import {
   IUserService,
   CreateUserRequest,
+  UserScoreboard,
 } from '../interfaces/services/IUser.Service.js';
 import { User } from './entities/User.Entity.js';
 import { UserRepository } from './User.Repository.js';
@@ -66,6 +67,27 @@ export class UserService implements IUserService {
     }
 
     return userRetorno;
+  }
+  async getLeaderboard(): Promise<UserScoreboard[]>{
+    const pointsList = await this.referralRepository.getReferralPointsByUsers()
+    if (!pointsList){
+      return [];
+    }
+    const finalReturn: UserScoreboard[] = [];
+    for (const pointItem of pointsList) {
+
+      const user = await this.userRepository.findById(pointItem.userId);
+      const referralPointsReturn = pointItem.points;
+      if(!user){
+        continue
+      }
+      const userScore = {
+        email:user.email,
+        referralPoints:referralPointsReturn
+      }
+      finalReturn.push(userScore)
+    }
+    return finalReturn;
   }
 
 }

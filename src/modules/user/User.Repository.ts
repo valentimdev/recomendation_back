@@ -29,9 +29,7 @@ export class UserRepository implements IUserRepository {
     return this.ormRepository.findOne({ where: { email: email } });
   }
 
-    async findByRefCode(referral: string): Promise<User | null> {
-    return this.ormRepository.findOne({ where: { referral: referral } });
-  }
+
 
   async update(user: User): Promise<User> {
     return this.ormRepository.save(user);

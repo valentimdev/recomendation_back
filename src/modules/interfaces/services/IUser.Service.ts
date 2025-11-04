@@ -6,7 +6,12 @@ export type CreateUserRequest = {
   password: string;
   referralCodeUsed?: string;
 }
+export type UserScoreboard={
+  email:string;
+  referralPoints:number;
+}
 export interface IUserService {
   register(data: CreateUserRequest): Promise<User>;
   getUserProfile(userId: string): Promise<User>;
+  getLeaderboard(): Promise<UserScoreboard[]>
 }

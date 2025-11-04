@@ -20,7 +20,7 @@ export async function userRoutes(fastify: FastifyInstance) {
     referralService,
   );
 
-  fastify.post('/users', async (request: FastifyRequest, reply: FastifyReply) => {
+  fastify.post('/users/register', async (request: FastifyRequest, reply: FastifyReply) => {
     
 
     try {
@@ -35,6 +35,16 @@ export async function userRoutes(fastify: FastifyInstance) {
       return reply.status(400).send({ message: (error as Error).message });
     }
   });
+  fastify.get('/users/scoreboard', async (request, reply) => {
+    try{
+       const placar = await userService.getLeaderboard();
+       return reply.status(200).send(placar)
+    }catch (error){
+        fastify.log.error(error); 
+      
+      return reply.status(500).send({ message: (error as Error).message });
+    }
+})
 
 
 }
