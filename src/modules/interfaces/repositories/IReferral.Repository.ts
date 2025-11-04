@@ -8,4 +8,5 @@ export interface IReferralRepository {
   delete(id: string): Promise<void>;
   findByReferrerId(userId: string): Promise<Referral[]>;
   findByReferredId(userId: string): Promise<Referral | null>;
+  getReferralPointsByUser(): Promise<{ userId: string; points: number }[]>;
 }

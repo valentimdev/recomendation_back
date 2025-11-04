@@ -50,4 +50,12 @@ export class ReferralRepository implements IReferralRepository {
 
     });
   }
+  async getReferralPointsByUser(): Promise<{ userId: string; points: number }[]> {
+        return this.ormRepository.createQueryBuilder('referral')
+            .select('referral.referrerId', 'userId') // Seleciona o ID do indicador
+            .addSelect('COUNT(*)', 'points')          // Conta quantos registros existem
+            .groupBy('referral.referrerId')           // Agrupa por indicador
+            .orderBy('points', 'DESC')
+            .getRawMany(); // getRawMany retorna os dados brutos (userId e points)
+    }
 }
