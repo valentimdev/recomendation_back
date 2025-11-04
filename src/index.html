@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de API - Fastify Auth</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1e1e1e; color: #fff; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { display: flex; gap: 30px; margin-bottom: 40px; }
+        .form-box { background-color: #2d2d2d; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); width: 350px; }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; margin-top: 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #444; border-radius: 4px; background-color: #3e3e3e; color: #fff; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #1c1c1c; padding: 15px; border-radius: 4px; overflow-x: auto; max-height: 400px; }
+        .status { margin-top: 15px; font-weight: bold; padding: 8px; border-radius: 4px; }
+        .success { color: #00ff88; border: 1px solid #00ff88; }
+        .error { color: #ff5555; border: 1px solid #ff5555; }
+        
+        /* Estilos do Placar */
+        #scoreboard { background-color: #2d2d2d; padding: 20px; border-radius: 8px; width: 750px; margin-top: 20px; }
+        #scoreboard-results { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        #scoreboard-results th, #scoreboard-results td { border: 1px solid #444; padding: 12px; text-align: left; }
+        #scoreboard-results th { background-color: #1e1e1e; color: #007bff; }
+    </style>
+</head>
+<body>
+
+    <h1>Frontend Básico para Testar API Fastify</h1>
+    <p>Endpoints: <code>POST /users</code> (Registro), <code>POST /auth/login</code> (Login), <code>GET /scoreboard</code></p>
+
+    <div class="container">
+        
+        <div class="form-box">
+            <h2>Novo Registro</h2>
+            <form id="register-form">
+                <label for="reg-name">Nome</label>
+                <input type="text" id="reg-name" name="name" required value="João Teste">
+
+                <label for="reg-email">E-mail</label>
+                <input type="email" id="reg-email" name="email" required value="joao.teste@exemplo.com">
+
+                <label for="reg-password">Senha</label>
+                <input type="password" id="reg-password" name="password" required value="123456">
+
+                <label for="reg-refcode">Código de Indicação (UUID)</label>
+                <input type="text" id="reg-refcode" name="referralCodeUsed" placeholder="Opcional: ID do padrinho">
+
+                <button type="submit">CADASTRAR</button>
+            </form>
+            <div id="register-status" class="status"></div>
+        </div>
+
+        <div class="form-box">
+            <h2>Login</h2>
+            <form id="login-form">
+                <label for="log-email">E-mail</label>
+                <input type="email" id="log-email" name="email" required value="joao.teste@exemplo.com">
+
+                <label for="log-password">Senha</label>
+                <input type="password" id="log-password" name="password" required value="123456">
+
+                <button type="submit">ENTRAR</button>
+            </form>
+            <div id="login-status" class="status"></div>
+            <p style="margin-top: 20px;">Token JWT Recebido:</p>
+            <pre id="jwt-display" style="font-size: 10px; word-break: break-all;"></pre>
+        </div>
+
+    </div>
+
+    <div id="scoreboard">
+        <h2>Placar de Indicações (Top 10)</h2>
+        <button id="load-scoreboard">Carregar Placar (/scoreboard)</button>
+        <table id="scoreboard-results">
+            <thead>
+                <tr>
+                    <th>E-mail</th>
+                    <th>Pontos</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+        <div id="scoreboard-status" class="status"></div>
+    </div>
+
+
+    <script>
+        // --- CONFIGURAÇÃO DA API ---
+        const BASE_URL = 'http://localhost:3000'; 
+        let currentToken = ''; // Variável para armazenar o JWT após o login
+
+        // Função utilitária para obter os dados do formulário
+        function getFormData(formId) {
+            const form = document.getElementById(formId);
+            const data = {};
+            new FormData(form).forEach((value, key) => {
+                // Apenas inclui campos com valor (exclui código referral vazio)
+                if (value) {
+                    data[key] = value;
+                }
+            });
+            return data;
+        }
+
+        // Função utilitária para exibir o status
+        function displayStatus(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = isError ? 'status error' : 'status success';
+        }
+
+        // --- FUNÇÃO PRINCIPAL: REQUISIÇÃO FETCH POST ---
+        async function makePostRequest(endpoint, data) {
+            try {
+                const response = await fetch(`${BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Se houver um token, inclua-o (útil para rotas protegidas)
+                        // 'Authorization': currentToken ? `Bearer ${currentToken}` : undefined
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    // Se o status for 400, 401, etc., lança um erro
+                    throw new Error(result.message || `Falha na requisição. Status: ${response.status}`);
+                }
+
+                return result; // Retorna o objeto JSON de sucesso
+
+            } catch (error) {
+                // Captura erros de rede ou erros lançados pelo servidor (4xx, 5xx)
+                throw new Error(error.message || 'Erro de rede. Servidor offline?');
+            }
+        }
+        
+        // --- ROTAS ---
+
+        // 1. REGISTRO (POST /users)
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = getFormData('register-form');
+            const statusElement = 'register-status';
+
+            try {
+                const response = await makePostRequest('/users/register', data);
+                displayStatus(statusElement, `SUCESSO! Usuário ${response.email} registrado. ID: ${response.id}`, false);
+                console.log('Registro Bem-Sucedido:', response);
+
+                // Preenche o campo de login automaticamente com o novo usuário
+                document.getElementById('log-email').value = response.email;
+                document.getElementById('log-password').value = data.password;
+
+            } catch (error) {
+                displayStatus(statusElement, `ERRO: ${error.message}`, true);
+                console.error('Erro de Registro:', error);
+            }
+        });
+
+        // 2. LOGIN (POST /auth/login)
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = getFormData('login-form');
+            const statusElement = 'login-status';
+
+            try {
+                const response = await makePostRequest('/auth/login', data);
+                
+                currentToken = response.jwtToken; // Armazena o token globalmente
+                
+                displayStatus(statusElement, `Login SUCESSO! JWT Recebido.`, false);
+                document.getElementById('jwt-display').textContent = currentToken;
+                
+                console.log('Login Bem-Sucedido. Token:', currentToken);
+
+            } catch (error) {
+                currentToken = '';
+                document.getElementById('jwt-display').textContent = 'FALHA NO LOGIN';
+                displayStatus(statusElement, `ERRO: ${error.message}`, true);
+                console.error('Erro de Login:', error);
+            }
+        });
+
+        // 3. PLACAR (GET /scoreboard)
+        document.getElementById('load-scoreboard').addEventListener('click', async () => {
+            const tbody = document.querySelector('#scoreboard-results tbody');
+            const statusElement = 'scoreboard-status';
+            tbody.innerHTML = '<tr><td colspan="2">Carregando...</td></tr>';
+            
+            try {
+                // Requisição GET (sem body)
+                const response = await fetch(`${BASE_URL}/users/scoreboard`, {
+                    method: 'GET'
+                });
+                
+                const results = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(results.message || 'Falha ao carregar placar.');
+                }
+                
+                tbody.innerHTML = ''; // Limpa o "Carregando..."
+                
+                if (results.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="2">Nenhum ponto registrado ainda.</td></tr>';
+                } else {
+                    results.forEach(item => {
+                        const row = tbody.insertRow();
+                        // Você definiu que a resposta tem { email, referralPoints }
+                        row.insertCell().textContent = item.email; 
+                        row.insertCell().textContent = item.referralPoints;
+                    });
+                }
+                displayStatus(statusElement, `Placar carregado com sucesso. Total: ${results.length} usuários.`, false);
+
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="2">Falha ao conectar.</td></tr>';
+                displayStatus(statusElement, `ERRO: ${error.message}`, true);
+                console.error('Erro ao Carregar Placar:', error);
+            }
+        });
+
+    </script>
+
+</body>
+</html>
