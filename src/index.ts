@@ -2,9 +2,13 @@ import Fastify from 'fastify'
 import "reflect-metadata";
 import { AppDataSource } from './config/data-source.js';
 import { userRoutes } from './modules/user/User.Controller.js';
+import fastifyJwt from '@fastify/jwt';
+import dotenv from 'dotenv';
 const fastify = Fastify({
   logger: true
 })
+
+dotenv.config()
 
 fastify.get('/', async (request, reply) => {
   return { hello: 'world' }
@@ -12,6 +16,10 @@ fastify.get('/', async (request, reply) => {
 
 fastify.register(userRoutes);
 
+fastify.register(fastifyJwt,{
+  secret:process.env.JWT_SECRET!,
+
+})
 const start = async () => {
   try {
     await AppDataSource.initialize();

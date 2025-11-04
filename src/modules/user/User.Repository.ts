@@ -1,5 +1,5 @@
-import { IUserRepository } from '../interfaces/repositories/IUser.Repository.js';
-import { IReferralRepository } from '../interfaces/repositories/IReferral.Repository.js';
+import { IUserRepository } from './interfaces/IUser.Repository.js';
+import { IReferralRepository } from '../../referral/interfaces/IReferral.Repository.js';
 import { Repository } from 'typeorm';
 import { AppDataSource } from '../../config/data-source.js';
 import { User } from './entities/User.Entity.js';
@@ -28,8 +28,6 @@ export class UserRepository implements IUserRepository {
   async findByEmail(email: string): Promise<User | null> {
     return this.ormRepository.findOne({ where: { email: email } });
   }
-
-
 
   async update(user: User): Promise<User> {
     return this.ormRepository.save(user);
