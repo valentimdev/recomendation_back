@@ -1,4 +1,3 @@
-import { Int32 } from 'typeorm';
 import { User } from '../entities/User.Entity.js';
 import { CreateUserRequest } from '../dto/User.DTO.js';
 
